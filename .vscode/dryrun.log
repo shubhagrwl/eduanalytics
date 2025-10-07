@@ -1,0 +1,5 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory '/media/shubhagrwl/T723/go/src/github.com/boilerplates/gin-boilerplate/amigo'
+golangci-lint run
+make: Leaving directory '/media/shubhagrwl/T723/go/src/github.com/boilerplates/gin-boilerplate/amigo'
+ 
