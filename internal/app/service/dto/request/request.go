@@ -4,6 +4,21 @@ import (
 	"eduanalytics/internal/app/service/util"
 )
 
+type CreateClassroomRequest struct {
+	Name      string `json:"name" binding:"required"`
+	SchoolId  int    `json:"school_id" binding:"required"`
+	TeacherId int    `json:"teacher_id" binding:"required"`
+}
+
+type UpdateClassroomRequest struct {
+	Name      string `json:"name"`
+	TeacherId int    `json:"teacher_id"`
+}
+
+type EnrollStudentsRequest struct {
+	StudentIds []int `json:"student_ids" binding:"required,min=1"`
+}
+
 type Pagination struct {
 	Limit      *int   `json:"limit,omitempty" form:"limit"`
 	Page       *int   `json:"page,omitempty" form:"page"`

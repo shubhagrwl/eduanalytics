@@ -5,11 +5,13 @@ import (
 )
 
 const (
-	USER_TABLE     = "users"
-	SCHOOL_TABLE   = "schools"
-	QUIZ_TABLE     = "quizzes"
-	EVENT_TABLE    = "events"
-	RESPONSE_TABLE = "responses"
+	USER_TABLE              = "users"
+	SCHOOL_TABLE            = "schools"
+	CLASSROOM_TABLE         = "classrooms"
+	STUDENT_CLASSROOM_TABLE = "student_classrooms"
+	QUIZ_TABLE              = "quizzes"
+	EVENT_TABLE             = "events"
+	RESPONSE_TABLE          = "responses"
 )
 
 type User struct {
@@ -29,10 +31,18 @@ type School struct {
 }
 
 type Classroom struct {
-	Id        int    `json:"id"`
-	Name      string `json:"name"`
-	SchoolId  int    `json:"school_id"`
-	TeacherId int    `json:"teacher_id"`
+	Id        int       `json:"id"`
+	Name      string    `json:"name"`
+	SchoolId  int       `json:"school_id"`
+	TeacherId int       `json:"teacher_id"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type StudentClassroom struct {
+	Id          int       `json:"id"`
+	StudentId   int       `json:"student_id"`
+	ClassroomId int       `json:"classroom_id"`
+	EnrolledAt  time.Time `json:"enrolled_at"`
 }
 
 type Quiz struct {

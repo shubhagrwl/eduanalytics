@@ -24,7 +24,17 @@ CREATE TABLE classrooms (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     school_id INT REFERENCES schools(id),
-    teacher_id INT REFERENCES users(id)
+    teacher_id INT REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Student Classrooms (junction table for many-to-many relationship)
+CREATE TABLE student_classrooms (
+    id SERIAL PRIMARY KEY,
+    student_id INT REFERENCES users(id) ON DELETE CASCADE,
+    classroom_id INT REFERENCES classrooms(id) ON DELETE CASCADE,
+    enrolled_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE(student_id, classroom_id)
 );
 
 -- Quizzes
@@ -74,6 +84,10 @@ CREATE TABLE events (
 CREATE INDEX idx_user_role ON users(role);
 CREATE INDEX idx_event_type ON events(event_name);
 CREATE INDEX idx_responses_student ON responses(student_id);
+CREATE INDEX idx_student_classrooms_student ON student_classrooms(student_id);
+CREATE INDEX idx_student_classrooms_classroom ON student_classrooms(classroom_id);
+CREATE INDEX idx_classrooms_teacher ON classrooms(teacher_id);
+CREATE INDEX idx_classrooms_school ON classrooms(school_id);
 -- +goose StatementEnd
 
 -- +goose Down

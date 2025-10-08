@@ -1,5 +1,68 @@
 package response
 
+import (
+	"eduanalytics/internal/app/db/dto"
+	"time"
+)
+
+type ClassroomResponse struct {
+	Id        int       `json:"id"`
+	Name      string    `json:"name"`
+	SchoolId  int       `json:"school_id"`
+	TeacherId int       `json:"teacher_id"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type ClassroomWithStudentsResponse struct {
+	Id        int               `json:"id"`
+	Name      string            `json:"name"`
+	SchoolId  int               `json:"school_id"`
+	TeacherId int               `json:"teacher_id"`
+	CreatedAt time.Time         `json:"created_at"`
+	Students  []StudentResponse `json:"students"`
+}
+
+type StudentResponse struct {
+	Id         int       `json:"id"`
+	Name       string    `json:"name"`
+	Email      string    `json:"email"`
+	EnrolledAt time.Time `json:"enrolled_at,omitempty"`
+}
+
+func ToClassroomResponse(classroom *dto.Classroom) ClassroomResponse {
+	return ClassroomResponse{
+		Id:        classroom.Id,
+		Name:      classroom.Name,
+		SchoolId:  classroom.SchoolId,
+		TeacherId: classroom.TeacherId,
+		CreatedAt: classroom.CreatedAt,
+	}
+}
+
+func ToClassroomResponseList(classrooms []dto.Classroom) []ClassroomResponse {
+	var responses []ClassroomResponse
+	for _, classroom := range classrooms {
+		responses = append(responses, ToClassroomResponse(&classroom))
+	}
+	return responses
+}
+
+func ToStudentResponse(user *dto.User) StudentResponse {
+	return StudentResponse{
+		Id:    user.Id,
+		Name:  user.Name,
+		Email: user.Email,
+	}
+}
+
+func ToStudentResponseList(users []dto.User) []StudentResponse {
+	var responses []StudentResponse
+	for _, user := range users {
+		responses = append(responses, ToStudentResponse(&user))
+	}
+	return responses
+}
+
 type TokenDetails struct {
 	AccessToken  string
 	RefreshToken string

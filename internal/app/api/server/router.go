@@ -12,9 +12,11 @@ import (
 	"eduanalytics/internal/app/db/repository"
 	"eduanalytics/internal/app/service/logger"
 	"eduanalytics/internal/app/service/session"
+	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/casbin/casbin/v2"
 	helmet "github.com/danielkov/gin-helmet"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -86,6 +88,21 @@ func NewRouter(ctx context.Context) *gin.Engine {
 
 	router.Use(uuidInjectionMiddleware())
 
+	// Initialize Casbin enforcer
+	modelPath := filepath.Join("internal", "config", "casbin_model.conf")
+	policyPath := filepath.Join("internal", "config", "casbin_policy.csv")
+	enforcer, err := casbin.NewEnforcer(modelPath, policyPath)
+	if err != nil {
+		log.Fatalf("Failed to initialize Casbin enforcer: %v", err)
+	}
+
+	// Load policy from file
+	err = enforcer.LoadPolicy()
+	if err != nil {
+		log.Fatalf("Failed to load Casbin policy: %v", err)
+	}
+	log.Info("Casbin enforcer initialized successfully")
+
 	// Initialize Database
 	dbConn, err := db.Init(ctx)
 	if err != nil {
@@ -99,6 +116,7 @@ func NewRouter(ctx context.Context) *gin.Engine {
 	quizRepository := repository.NewQuizzesRepository(dbService)
 	responseRepository := repository.NewResponseRepository(dbService)
 	reportsRepository := repository.NewReportsRepository(dbService)
+	classroomRepository := repository.NewClassroomsRepository(dbService)
 
 	// Initialize Session Manager (24 hours session expiry)
 	sessionManager := session.NewSessionManager(24 * time.Hour)
@@ -113,6 +131,7 @@ func NewRouter(ctx context.Context) *gin.Engine {
 	responseController := controller.NewResponseController(responseRepository, eventsController)
 	reportController := controller.NewReportController(reportsRepository, eventsController)
 	wsController := ws.NewWSController(responseRepository, eventsController)
+	classroomController := controller.NewClassroomController(classroomRepository, usersRepository)
 
 	v1 := router.Group("/api/v1")
 	{
@@ -121,20 +140,31 @@ func NewRouter(ctx context.Context) *gin.Engine {
 
 		authenticated := v1.Group("/auth")
 		{
-			authenticated.Use(auth.Authentication(jwtService))
+			authenticated.Use(auth.Authentication(jwtService, enforcer))
 			authenticated.POST(REFRESH, oAuthController.RefreshToken)
 			authenticated.POST(LOGOUT, oAuthController.Logout)
 		}
-		quiz := v1.Group("")
-		{
-			quiz.Use(auth.Authentication(jwtService))
-			quiz.POST(QUIZZES, quizController.CreateQuiz)
-			quiz.POST(RESPONSES, responseController.SubmitResponse)
-			quiz.GET(REPORT_STUDENT_PERFORMANCE, reportController.StudentPerformanceReport)
-			quiz.GET(REPORT_CLASSROOM_ENGAGEMENT, reportController.ClassroomEngagementReport)
-			quiz.GET(REPORT_CONTENT_EFFECTIVENESS, reportController.ContentEffectivenessReport)
 
-			quiz.GET(WS_QUIZ, wsController.QuizWebSocket)
+		protected := v1.Group("")
+		{
+			protected.Use(auth.Authentication(jwtService, enforcer))
+
+			protected.POST(QUIZZES, quizController.CreateQuiz)
+			protected.POST(RESPONSES, responseController.SubmitResponse)
+			protected.GET(REPORT_STUDENT_PERFORMANCE, reportController.StudentPerformanceReport)
+			protected.GET(REPORT_CLASSROOM_ENGAGEMENT, reportController.ClassroomEngagementReport)
+			protected.GET(REPORT_CONTENT_EFFECTIVENESS, reportController.ContentEffectivenessReport)
+			protected.GET(WS_QUIZ, wsController.QuizWebSocket)
+
+			// Classroom routes
+			protected.POST(CLASSROOMS, classroomController.CreateClassroom)
+			protected.GET(CLASSROOMS, classroomController.GetClassrooms)
+			protected.GET(CLASSROOMS+CLASSROOM_DETAILS, classroomController.GetClassroom)
+			protected.PUT(CLASSROOMS+CLASSROOM_DETAILS, classroomController.UpdateClassroom)
+			protected.DELETE(CLASSROOMS+CLASSROOM_DETAILS, classroomController.DeleteClassroom)
+			protected.POST(CLASSROOMS+CLASSROOM_DETAILS+"/enroll", classroomController.EnrollStudents)
+			protected.DELETE(CLASSROOMS+CLASSROOM_DETAILS+"/students/:student_id", classroomController.UnenrollStudent)
+			protected.GET(CLASSROOMS+CLASSROOM_LIST_STUDENT, classroomController.GetStudentsByClassroom)
 		}
 	}
 

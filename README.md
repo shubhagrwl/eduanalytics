@@ -64,6 +64,7 @@ EduAnalytics is a reporting and analytics backend designed for educational platf
 ### Security Features
 - 🔐 Password hashing (bcrypt)
 - 🔐 JWT-based authentication
+- 🔐 **RBAC Authorization (Casbin)** - Role-based access control
 - 🔐 Session management (in-memory)
 - 🔐 CORS configuration
 - 🔐 Security headers (CSP, Helmet)
@@ -183,6 +184,7 @@ github.com/jinzhu/gorm                # ORM
 github.com/lib/pq                     # PostgreSQL driver
 github.com/golang-jwt/jwt             # JWT authentication
 github.com/gorilla/websocket          # WebSocket support
+github.com/casbin/casbin/v2           # RBAC authorization
 github.com/danielkov/gin-helmet       # Security headers
 github.com/google/uuid                # UUID generation for correlation IDs
 go.uber.org/zap                       # Structured logging
@@ -275,7 +277,16 @@ bitbucket.org/liamstask/goose         # Database migrations
    goose postgres "host=localhost port=5432 user=postgres password=postgres dbname=eduanalytics sslmode=disable" up
    ```
 
-6. **Run the application**
+6. **Setup RBAC (Casbin)**
+   ```bash
+   # Run the RBAC setup script
+   ./setup_rbac.sh
+   
+   # Or manually install dependencies
+   go mod tidy
+   ```
+
+7. **Run the application**
    ```bash
    go run main.go
    ```
@@ -730,7 +741,7 @@ docker-compose down --volumes
    - [ ] Enable HTTPS/TLS
    - [ ] Implement rate limiting
    - [ ] Add comprehensive input validation
-   - [ ] Enable RBAC authorization
+   - [x] Enable RBAC authorization (✅ Implemented with Casbin)
    - [ ] Add authentication to WebSocket endpoint
    - [ ] Implement API key or token validation
 
@@ -795,17 +806,21 @@ eduanalytics/
 ├── Makefile                         # Build commands
 ├── .env_example                     # Environment template
 ├── README.md                        # This file
+├── configs/                        # Configuration files
+│   ├── casbin_model.conf          # Casbin RBAC model
+│   └── casbin_policy.csv          # Casbin permission policies
 ├── docs/                            # Documentation
 │   ├── ER_DIAGRAM.md               # Database schema
 │   ├── SEQUENCE_DIAGRAMS.md        # Flow diagrams
 │   ├── TECHNICAL_DESIGN_DOCUMENT.md # Technical design
+│   ├── RBAC_IMPLEMENTATION.md      # RBAC documentation
 │   └── README.md                   # Documentation README
 ├── internal/
 │   ├── config/
 │   │   └── config.go               # Configuration loader
 │   └── app/
 │       ├── api/
-│       │   ├── middleware/         # Auth, JWT middleware
+│       │   ├── middleware/         # Auth, JWT, Casbin middleware
 │       │   └── server/             # Router, routes
 │       ├── constants/              # App constants
 │       ├── controller/             # Request handlers
@@ -945,6 +960,7 @@ curl http://localhost:9090/api/v1/content-effectiveness?quiz_id=1
 ### ✅ Completed Features
 - User registration and authentication
 - JWT-based session management with refresh tokens
+- **RBAC Authorization (Casbin)** - Role-based access control for admin/teacher/student
 - Quiz creation endpoint
 - Response submission endpoint
 - Three reporting endpoints (Student Performance, Classroom Engagement, Content Effectiveness)
@@ -988,8 +1004,8 @@ eventsController.StartWorkerPool(ctx, 5) // Start with 5 workers
 
 Note: This requires refactoring `server.Init()` to return the events controller or initializing it in main.go instead.
 
-#### 2. ⚠️ No RBAC Authorization
-Students can access other students' data. Need role-based access control middleware.
+#### 2. ✅ RBAC Authorization Implemented
+Role-based access control using Casbin is now implemented. See `QUICK_START_RBAC.md` for details.
 
 #### 3. ⚠️ In-Memory Session Storage
 Sessions are lost on restart. Should use Redis or similar for production.
@@ -1026,7 +1042,7 @@ Missing comprehensive input validation on API requests.
 
 ### Phase 1: Critical Fixes (Immediate)
 - [ ] Start event worker pool in main.go initialization
-- [ ] Implement RBAC authorization
+- [x] Implement RBAC authorization (✅ Completed with Casbin)
 - [ ] Add comprehensive input validation
 - [ ] Improve WebSocket error handling
 - [ ] Add graceful shutdown handling
@@ -1062,6 +1078,9 @@ Missing comprehensive input validation on API requests.
 - **[ER Diagram](docs/ER_DIAGRAM.md)** - Complete database schema with relationships
 - **[Sequence Diagrams](docs/SEQUENCE_DIAGRAMS.md)** - 6 key workflow diagrams
 - **[Technical Design Document](docs/TECHNICAL_DESIGN_DOCUMENT.md)** - Detailed technical design and architecture
+- **[RBAC Implementation](docs/RBAC_IMPLEMENTATION.md)** - Complete RBAC documentation
+- **[Quick Start RBAC](QUICK_START_RBAC.md)** - Quick setup guide for RBAC
+- **[RBAC Summary](RBAC_IMPLEMENTATION_SUMMARY.md)** - Implementation summary
 - **[Documentation README](docs/README.md)** - Documentation overview
 
 ## 🤝 Contributing
