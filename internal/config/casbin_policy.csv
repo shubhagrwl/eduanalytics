@@ -1,0 +1,52 @@
+p, admin, /auth/register, POST
+p, admin, /auth/login, POST
+p, admin, /refresh, POST
+p, admin, /logout, POST
+p, admin, /quizzes, POST
+p, admin, /responses, POST
+p, admin, /student-performance, GET
+p, admin, /classroom-engagement, GET
+p, admin, /content-effectiveness, GET
+p, admin, /ws/quiz, GET
+p, admin, /classrooms, POST
+p, admin, /classrooms, GET
+p, admin, /classrooms/:id, GET
+p, admin, /classrooms/:id, PUT
+p, admin, /classrooms/:id, DELETE
+p, admin, /classrooms/:id/enroll, POST
+p, admin, /classrooms/:id/students/:student_id, DELETE
+p, admin, /classrooms/:id/students, GET
+
+p, teacher, /refresh, POST
+p, teacher, /logout, POST
+p, teacher, /quizzes, POST
+p, teacher, /responses, POST
+p, teacher, /student-performance, GET
+p, teacher, /classroom-engagement, GET
+p, teacher, /content-effectiveness, GET
+p, teacher, /ws/quiz, GET
+p, teacher, /classrooms, POST
+p, teacher, /classrooms, GET
+p, teacher, /classrooms/:id, GET
+p, teacher, /classrooms/:id, PUT
+p, teacher, /classrooms/:id, DELETE
+p, teacher, /classrooms/:id/enroll, POST
+p, teacher, /classrooms/:id/students/:student_id, DELETE
+p, teacher, /classrooms/:id/students, GET
+
+p, student, /refresh, POST
+p, student, /logout, POST
+p, student, /responses, POST
+p, student, /student-performance, GET
+p, student, /ws/quiz, GET
+p, student, /classrooms, GET
+p, student, /classrooms/:id, GET
+p, student, /classrooms/:id/students, GET
+
+p, public, /auth/register, POST
+p, public, /auth/login, POST
+
+g, admin, admin
+g, teacher, teacher
+g, student, student
+

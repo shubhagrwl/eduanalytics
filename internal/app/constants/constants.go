@@ -19,6 +19,14 @@ type (
 	ROLE            string
 )
 
+// Role constants
+const (
+	ROLE_ADMIN   = "admin"
+	ROLE_TEACHER = "teacher"
+	ROLE_STUDENT = "student"
+	ROLE_PUBLIC  = "public"
+)
+
 var DBLOGMODE bool
 
 func (c CONTEXT_KEY) String() string {
